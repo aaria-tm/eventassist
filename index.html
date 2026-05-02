@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shaadi Studio — Event Planner</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+--bg:#0d0a08;--surface:#1a1410;--surface2:#231c16;--surface3:#2d2318;
+--gold:#c9a84c;--gold2:#e8c97a;--red:#8b2020;--red2:#b83030;
+--cream:#f5ede0;--muted:#8a7a6a;--border:#3d2e20;
+--accent:#c9a84c;--text:#f0e6d3;--subtext:#a89880;
+--font-display:'Cormorant Garamond',serif;--font-body:'DM Sans',sans-serif;
+}
+.theme-party{
+--bg:#08090d;--surface:#10121a;--surface2:#181c28;--surface3:#1f2535;
+--gold:#6c8fd4;--gold2:#8faee8;--red:#1a3a6b;--red2:#2a5aab;
+--cream:#e8eef8;--muted:#6a7a9a;--border:#2a3550;
+--accent:#6c8fd4;--text:#dde4f4;--subtext:#8a99bb;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.6;min-height:100vh;overflow-x:hidden}
+.noise{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.03;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.app{position:relative;z-index:1}
+
+/* HEADER */
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.logo{font-family:var(--font-display);font-size:22px;font-weight:300;color:var(--gold2);letter-spacing:1px}
+.logo span{color:var(--subtext);font-size:13px;display:block;font-family:var(--font-body);letter-spacing:2px;text-transform:uppercase;font-weight:300}
+.budget-pill{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:12px;color:var(--subtext);cursor:pointer;transition:.2s}
+.budget-pill:hover{border-color:var(--gold)}
+
+/* SCREEN */
+.screen{display:none;animation:fadeIn .4s ease}
+.screen.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+/* HERO */
+.hero{padding:40px 20px 32px;text-align:center}
+.hero-eyebrow{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:12px;font-weight:500}
+.hero-title{font-family:var(--font-display);font-size:42px;font-weight:300;color:var(--cream);line-height:1.1;margin-bottom:8px}
+.hero-title em{color:var(--gold2);font-style:italic}
+.hero-sub{color:var(--subtext);font-size:13px;margin-bottom:28px}
+
+/* CITY SELECT */
+.city-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:0 20px;margin-bottom:24px}
+.city-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center;cursor:pointer;transition:.25s;position:relative;overflow:hidden}
+.city-card:hover,.city-card.sel{border-color:var(--gold);background:var(--surface2)}
+.city-card.sel::after{content:'✓';position:absolute;top:8px;right:10px;color:var(--gold);font-size:11px;font-weight:500}
+.city-card .city-name{font-family:var(--font-display);font-size:18px;color:var(--cream)}
+.city-card .city-sub{font-size:11px;color:var(--subtext);margin-top:2px}
+
+/* EVENT TYPE */
+.event-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:0 20px;margin-bottom:24px}
+.event-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 12px;text-align:center;cursor:pointer;transition:.25s}
+.event-card:hover,.event-card.sel{border-color:var(--gold);background:var(--surface2)}
+.event-card .ev-icon{font-size:28px;margin-bottom:6px}
+.event-card .ev-name{font-family:var(--font-display);font-size:16px;color:var(--cream)}
+.event-card .ev-sub{font-size:11px;color:var(--subtext);margin-top:2px}
+
+/* SECTION */
+.section{padding:0 20px;margin-bottom:28px}
+.section-title{font-family:var(--font-display);font-size:24px;font-weight:300;color:var(--cream);margin-bottom:4px}
+.section-title em{color:var(--gold2);font-style:italic}
+.section-sub{font-size:12px;color:var(--subtext);margin-bottom:16px;letter-spacing:.5px}
+.divider{width:40px;height:1px;background:var(--gold);margin:8px 0 16px}
+
+/* VENDOR CARDS */
+.vendor-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:12px;cursor:pointer;transition:.25s;position:relative}
+.vendor-card:hover{border-color:var(--gold);background:var(--surface2)}
+.vendor-card.sel{border-color:var(--gold2);background:var(--surface2)}
+.vendor-card.sel .vc-check{display:flex}
+.vc-check{display:none;width:22px;height:22px;border-radius:50%;background:var(--gold);align-items:center;justify-content:center;font-size:11px;color:#000;font-weight:700;position:absolute;top:14px;right:14px}
+.vc-top{display:flex;gap:12px;align-items:flex-start}
+.vc-badge{width:44px;height:44px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.vc-info{flex:1}
+.vc-name{font-family:var(--font-display);font-size:17px;color:var(--cream);font-weight:400}
+.vc-tag{display:inline-block;background:var(--surface3);border:1px solid var(--border);border-radius:20px;padding:2px 8px;font-size:10px;color:var(--subtext);margin-top:4px;margin-right:4px}
+.vc-price{font-size:18px;font-weight:500;color:var(--gold);margin-top:6px}
+.vc-price span{font-size:11px;color:var(--subtext);font-weight:400}
+.vc-desc{font-size:12px;color:var(--subtext);margin-top:8px;line-height:1.5}
+.vc-items{margin-top:10px;display:flex;flex-wrap:wrap;gap:6px}
+.vc-item{background:var(--surface3);border-radius:20px;padding:3px 10px;font-size:11px;color:var(--subtext)}
+.compare-btn{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:6px 14px;border:1px solid var(--border);border-radius:20px;font-size:11px;color:var(--subtext);cursor:pointer;background:transparent;transition:.2s}
+.compare-btn:hover{border-color:var(--gold);color:var(--gold)}
+.compare-btn.marked{border-color:var(--gold2);color:var(--gold2);background:var(--surface3)}
+
+/* PLATES INPUT */
+.qty-row{display:flex;align-items:center;gap:10px;margin-top:10px;background:var(--surface3);border-radius:10px;padding:10px 14px}
+.qty-btn{width:30px;height:30px;border-radius:50%;border:1px solid var(--border);background:transparent;color:var(--gold);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s}
+.qty-btn:hover{border-color:var(--gold);background:var(--surface2)}
+.qty-num{font-size:16px;font-weight:500;color:var(--cream);min-width:40px;text-align:center}
+.qty-label{font-size:12px;color:var(--subtext);flex:1}
+
+/* CAKE */
+.kg-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.kg-pill{padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--subtext);font-size:12px;cursor:pointer;transition:.2s}
+.kg-pill:hover,.kg-pill.sel{border-color:var(--gold);color:var(--gold);background:var(--surface3)}
+
+/* TIMELINE */
+.timeline{padding:0 20px;margin-bottom:24px}
+.tl-item{display:flex;gap:14px;margin-bottom:0}
+.tl-left{display:flex;flex-direction:column;align-items:center}
+.tl-dot{width:10px;height:10px;border-radius:50%;background:var(--gold);flex-shrink:0;margin-top:4px}
+.tl-line{width:1px;flex:1;background:var(--border);margin:4px 0}
+.tl-item:last-child .tl-line{display:none}
+.tl-content{padding-bottom:18px;flex:1}
+.tl-time{font-size:11px;color:var(--gold);font-weight:500;letter-spacing:.5px}
+.tl-role{font-size:13px;color:var(--cream);margin-top:2px}
+.tl-note{font-size:11px;color:var(--subtext);margin-top:2px}
+
+/* INPUT */
+.input-row{margin-bottom:14px}
+.input-label{font-size:11px;color:var(--subtext);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;display:block}
+.inp{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-family:var(--font-body);font-size:14px;outline:none;transition:.2s}
+.inp:focus{border-color:var(--gold)}
+.inp::placeholder{color:var(--muted)}
+select.inp{cursor:pointer}
+
+/* BUDGET */
+.budget-bar{background:var(--surface2);border-radius:10px;height:8px;overflow:hidden;margin:8px 0}
+.budget-fill{height:100%;border-radius:10px;background:linear-gradient(90deg,var(--gold),var(--red2));transition:.4s}
+.budget-fill.over{background:linear-gradient(90deg,var(--red2),#ff4444)}
+.budget-summary{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.bs-card{background:var(--surface2);border-radius:10px;padding:12px;border:1px solid var(--border)}
+.bs-label{font-size:10px;color:var(--subtext);text-transform:uppercase;letter-spacing:1px}
+.bs-val{font-size:18px;font-weight:500;color:var(--gold);margin-top:4px}
+.bs-val.over{color:#ff6b6b}
+
+/* SUGGESTIONS */
+.suggestion-card{background:var(--surface);border:1px solid #8b202040;border-radius:12px;padding:14px;margin-bottom:10px;border-left:3px solid var(--red2)}
+.sugg-title{font-size:13px;color:var(--cream);font-weight:500;margin-bottom:4px}
+.sugg-desc{font-size:12px;color:var(--subtext);line-height:1.5}
+
+/* COMPARE MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:#00000090;z-index:200;align-items:flex-end}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:20px 20px 0 0;width:100%;max-height:80vh;overflow-y:auto;padding:24px 20px 40px}
+.modal-handle{width:40px;height:3px;background:var(--border);border-radius:2px;margin:0 auto 20px}
+.modal-title{font-family:var(--font-display);font-size:22px;color:var(--cream);margin-bottom:4px}
+.modal-sub{font-size:12px;color:var(--subtext);margin-bottom:20px}
+.compare-grid{display:grid;gap:12px}
+.cg-header{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:8px}
+.cg-name{font-family:var(--font-display);font-size:16px;color:var(--gold);text-align:center;padding:10px;background:var(--surface2);border-radius:10px}
+.cg-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:8px}
+.cg-cell{background:var(--surface2);border-radius:10px;padding:10px 12px;font-size:12px}
+.cg-key{color:var(--subtext);font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.cg-val{color:var(--cream)}
+.cg-val.gold{color:var(--gold)}
+.recommended-banner{background:var(--gold);border-radius:10px;padding:12px 16px;margin-top:16px;color:#000}
+.rec-label{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.rec-text{font-size:13px;font-weight:500}
+
+/* CONTACTS */
+.contact-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;display:flex;gap:12px;align-items:center}
+.contact-avatar{width:42px;height:42px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:16px;color:var(--gold);flex-shrink:0}
+.contact-info{flex:1}
+.contact-name{font-size:14px;color:var(--cream);font-weight:500}
+.contact-role{font-size:11px;color:var(--subtext);margin-top:1px}
+.contact-price{font-size:12px;color:var(--gold);margin-top:4px}
+.contact-location{font-size:11px;color:var(--subtext)}
+
+/* THEMES */
+.theme-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px}
+.theme-card{border-radius:12px;padding:14px;cursor:pointer;border:2px solid transparent;transition:.25s}
+.theme-card:hover{transform:scale(1.02)}
+.theme-card.sel{border-color:var(--gold)}
+.theme-swatch{height:36px;border-radius:8px;margin-bottom:8px}
+.theme-name{font-size:13px;color:var(--cream);font-weight:500}
+.theme-cost{font-size:11px;color:var(--subtext);margin-top:2px}
+
+/* ARTISTS */
+.artist-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:12px}
+.artist-top{display:flex;justify-content:space-between;align-items:flex-start}
+.artist-name{font-family:var(--font-display);font-size:17px;color:var(--cream)}
+.artist-price{font-size:16px;color:var(--gold);font-weight:500}
+.artist-type{font-size:11px;color:var(--subtext);margin-top:2px}
+.artist-includes{font-size:12px;color:var(--subtext);margin-top:10px;line-height:1.6}
+.artist-btn{margin-top:12px;width:100%;background:transparent;border:1px solid var(--border);border-radius:10px;padding:10px;color:var(--subtext);cursor:pointer;font-family:var(--font-body);font-size:13px;transition:.2s}
+.artist-btn:hover{border-color:var(--gold);color:var(--gold)}
+.artist-btn.sel{border-color:var(--gold2);color:var(--gold2);background:var(--surface2)}
+
+/* LAST MINUTE */
+.lm-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.lm-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;transition:.25s;text-align:center}
+.lm-card:hover,.lm-card.sel{border-color:var(--gold);background:var(--surface2)}
+.lm-icon{font-size:26px;margin-bottom:6px}
+.lm-name{font-size:13px;color:var(--cream);font-weight:500}
+.lm-vendor{font-size:11px;color:var(--subtext);margin-top:4px;line-height:1.4}
+
+/* CTA BUTTON */
+.cta{width:100%;padding:15px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--gold),var(--red2));color:#fff;font-family:var(--font-body);font-size:15px;font-weight:500;cursor:pointer;letter-spacing:.5px;transition:.25s;margin-top:8px}
+.cta:hover{opacity:.9;transform:scale(.99)}
+.cta:active{transform:scale(.97)}
+.cta-outline{background:transparent;border:1px solid var(--gold);color:var(--gold)}
+.cta-outline:hover{background:var(--surface2)}
+
+/* NAV */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:flex;padding:10px 0 20px;z-index:99}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:6px 0;transition:.2s;opacity:.5}
+.nav-item.active{opacity:1}
+.nav-item .ni-icon{font-size:18px}
+.nav-item .ni-label{font-size:10px;color:var(--subtext);letter-spacing:.5px}
+.nav-item.active .ni-label{color:var(--gold)}
+
+/* FINAL SUMMARY */
+.summary-item{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)}
+.summary-item:last-child{border:none}
+.si-label{font-size:13px;color:var(--subtext)}
+.si-val{font-size:14px;color:var(--cream);font-weight:500}
+.si-val.gold{color:var(--gold);font-size:16px}
+
+/* ANCHOR CARD */
+.anchor-card{background:linear-gradient(135deg,var(--surface2),var(--surface3));border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:12px}
+.anchor-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.anchor-name{font-family:var(--font-display);font-size:18px;color:var(--cream)}
+.anchor-price{font-size:14px;color:var(--gold)}
+.anchor-desc{font-size:12px;color:var(--subtext);line-height:1.6;margin-bottom:10px}
+.script-preview{background:var(--surface);border-radius:10px;padding:12px;border-left:2px solid var(--gold);font-size:12px;color:var(--subtext);line-height:1.6;font-style:italic}
+
+.pb-wrap{padding-bottom:90px}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--gold);color:#000;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:500;z-index:999;opacity:0;transition:.3s;pointer-events:none}
+.toast.show{opacity:1}
+.step-indicator{display:flex;gap:6px;justify-content:center;margin-bottom:20px}
+.step-dot{width:6px;height:6px;border-radius:50%;background:var(--border)}
+.step-dot.done{background:var(--gold)}
+.step-dot.active{background:var(--gold2);width:18px;border-radius:3px}
+.tag-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:11px;border:1px solid var(--border);color:var(--subtext);background:var(--surface2);cursor:pointer;margin:3px}
+.tag-chip.sel{border-color:var(--gold);color:var(--gold);background:var(--surface3)}
+.section-header-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.see-all{font-size:11px;color:var(--gold);cursor:pointer;text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="noise"></div>
+<div class="app" id="app">
+
+<div class="header">
+  <div class="logo">Shaadi Studio<span>by Celeste Events</span></div>
+  <div class="budget-pill" onclick="showBudgetModal()">₹<span id="header-budget">0</span> used</div>
+</div>
+
+<!-- SCREENS -->
+<div class="screen active pb-wrap" id="screen-home">
+  <div class="hero">
+    <div class="hero-eyebrow">Mumbai · Delhi · Pune · Bangalore</div>
+    <div class="hero-title">Plan your<br><em>perfect event</em></div>
+    <div class="hero-sub">Curated vendors, live artists & complete coordination</div>
+  </div>
+  <div class="section">
+    <div class="section-title">Choose your <em>city</em></div>
+    <div class="divider"></div>
+  </div>
+  <div class="city-grid">
+    <div class="city-card" onclick="selectCity('Mumbai')"><div class="city-name">Mumbai</div><div class="city-sub">Bollywood vibes</div></div>
+    <div class="city-card" onclick="selectCity('Delhi')"><div class="city-name">Delhi</div><div class="city-sub">Grand & royal</div></div>
+    <div class="city-card" onclick="selectCity('Pune')"><div class="city-name">Pune</div><div class="city-sub">Elegant & intimate</div></div>
+    <div class="city-card" onclick="selectCity('Bangalore')"><div class="city-name">Bangalore</div><div class="city-sub">Modern & chic</div></div>
+  </div>
+  <div class="section">
+    <div class="input-row">
+      <label class="input-label">Your budget</label>
+      <input class="inp" type="number" id="budget-input" placeholder="e.g. 500000" oninput="updateBudget(this.value)">
+    </div>
+  </div>
+  <div class="section">
+    <button class="cta" onclick="if(state.city&&state.budget){showScreen('screen-event')}else{showToast('Please select city & enter budget')}">Continue →</button>
+  </div>
+</div>
+
+<div class="screen pb-wrap" id="screen-event">
+  <div class="hero">
+    <div class="hero-eyebrow" id="event-city-label"></div>
+    <div class="hero-title">What's the <em>occasion?</em></div>
+  </div>
+  <div class="event-grid">
+    <div class="event-card" onclick="selectEvent('Wedding','💍','wedding')"><div class="ev-icon">💍</div><div class="ev-name">Wedding</div><div class="ev-sub">Vivaah ceremony</div></div>
+    <div class="event-card" onclick="selectEvent('Engagement','💎','wedding')"><div class="ev-icon">💎</div><div class="ev-name">Engagement</div><div class="ev-sub">Sagai</div></div>
+    <div class="event-card" onclick="selectEvent('Mehendi','🌿','wedding')"><div class="ev-icon">🌿</div><div class="ev-name">Mehendi</div><div class="ev-sub">Night before</div></div>
+    <div class="event-card" onclick="selectEvent('Sangeet','🎶','wedding')"><div class="ev-icon">🎶</div><div class="ev-name">Sangeet</div><div class="ev-sub">Music night</div></div>
+    <div class="event-card" onclick="selectEvent('Birthday','🎂','party')"><div class="ev-icon">🎂</div><div class="ev-name">Birthday</div><div class="ev-sub">Celebration</div></div>
+    <div class="event-card" onclick="selectEvent('Baby Shower','👶','party')"><div class="ev-icon">👶</div><div class="ev-name">Baby Shower</div><div class="ev-sub">Godh Bharai</div></div>
+    <div class="event-card" onclick="selectEvent('Naming Ceremony','✨','party')"><div class="ev-icon">✨</div><div class="ev-name">Naming Ceremony</div><div class="ev-sub">Namkaran</div></div>
+    <div class="event-card" onclick="selectEvent('Cocktail Party','🍸','party')"><div class="ev-icon">🍸</div><div class="ev-name">Cocktail Party</div><div class="ev-sub">Evening soiree</div></div>
+  </div>
+  <div class="section" id="wedding-time-section" style="display:none">
+    <div class="input-row">
+      <label class="input-label">Time of ceremony</label>
+      <select class="inp" id="ceremony-time" onchange="state.ceremonyTime=this.value;buildTimeline()">
+        <option value="">Select time</option>
+        <option value="morning">Morning (7am–12pm)</option>
+        <option value="afternoon">Afternoon (12pm–4pm)</option>
+        <option value="evening">Evening (4pm–8pm)</option>
+        <option value="night">Night (8pm onwards)</option>
+      </select>
+    </div>
+  </div>
+  <div class="section">
+    <button class="cta" onclick="if(state.event){showPlanning()}else{showToast('Please select an event type')}">Plan this event →</button>
+  </div>
+</div>
+
+<div class="screen pb-wrap" id="screen-plan">
+  <div style="padding:20px 20px 0">
+    <div class="step-indicator" id="step-dots"></div>
+    <div class="section-title" id="plan-title"></div>
+    <div class="section-sub" id="plan-sub"></div>
+    <div class="divider"></div>
+  </div>
+  <div id="plan-content"></div>
+</div>
+
+<div class="screen pb-wrap" id="screen-summary">
+  <div class="hero">
+    <div class="hero-eyebrow">Final Estimate</div>
+    <div class="hero-title">Your <em>event plan</em></div>
+  </div>
+  <div class="section" id="summary-content"></div>
+</div>
+
+<div class="screen pb-wrap" id="screen-timeline">
+  <div class="hero">
+    <div class="hero-title">Staff <em>Timeline</em></div>
+    <div class="hero-sub" id="tl-event-label"></div>
+  </div>
+  <div class="timeline" id="timeline-content"></div>
+</div>
+
+<div class="screen pb-wrap" id="screen-anchors">
+  <div class="hero">
+    <div class="hero-title">Event <em>Anchors</em></div>
+    <div class="hero-sub">Professional hosts & emcees</div>
+  </div>
+  <div class="section" id="anchors-content"></div>
+</div>
+
+<div class="screen pb-wrap" id="screen-gifts">
+  <div class="hero">
+    <div class="hero-title">Return <em>Gifts</em></div>
+    <div class="hero-sub">Curated vendors for favours & gifting</div>
+  </div>
+  <div class="section" id="gifts-content"></div>
+</div>
+
+</div><!-- end app -->
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <div class="nav-item active" onclick="switchNav(this,'screen-plan')"><div class="ni-icon">✦</div><div class="ni-label">Plan</div></div>
+  <div class="nav-item" onclick="switchNav(this,'screen-timeline')"><div class="ni-icon">⏱</div><div class="ni-label">Timeline</div></div>
+  <div class="nav-item" onclick="switchNav(this,'screen-anchors')"><div class="ni-icon">🎙</div><div class="ni-label">Anchors</div></div>
+  <div class="nav-item" onclick="switchNav(this,'screen-gifts')"><div class="ni-icon">🎁</div><div class="ni-label">Gifts</div></div>
+  <div class="nav-item" onclick="switchNav(this,'screen-summary')"><div class="ni-icon">₹</div><div class="ni-label">Summary</div></div>
+</nav>
+
+<!-- COMPARE MODAL -->
+<div class="modal-overlay" id="compare-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Side-by-side <em>comparison</em></div>
+    <div class="modal-sub">Analysing best fit for your event</div>
+    <div id="compare-content"></div>
+    <button class="cta cta-outline" style="margin-top:16px" onclick="closeModal('compare-modal')">Close</button>
+  </div>
+</div>
+
+<!-- BUDGET MODAL -->
+<div class="modal-overlay" id="budget-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Budget <em>overview</em></div>
+    <div class="modal-sub">Track your spending</div>
+    <div id="budget-modal-content"></div>
+    <button class="cta cta-outline" style="margin-top:16px" onclick="closeModal('budget-modal')">Close</button>
+  </div>
+</div>
+
+<!-- LAST MINUTE MODAL -->
+<div class="modal-overlay" id="lm-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Last-Minute <em>Support</em></div>
+    <div class="modal-sub">We've got you covered — select services needed</div>
+    <div class="lm-grid" id="lm-content"></div>
+    <div id="lm-vendors" style="margin-top:16px"></div>
+    <button class="cta" style="margin-top:16px" onclick="closeModal('lm-modal')">Done</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const state={city:'',budget:0,event:'',theme:'wedding',ceremonyTime:'evening',selections:{catering:null,cake:null,decor:null,entry:null,artists:[],lastMinute:[]},plates:100,cakeKg:2,compareItems:[],totalCost:0};
+
+const DATA={
+  catering:{
+    Mumbai:[
+      {id:'c1',name:'Bombay Feast Co.',badge:'🍛',price:350,tags:['Veg+Non-veg','Live counters'],rating:'4.8',
+       desc:'Mumbai\'s finest caterers with 20 years of experience. Specialise in Maharashtrian & Mughlai cuisine.',
+       menu:{starter:['Pani Puri Station','Dahi Vada','Seekh Kebab','Veg Shammi','Spring Rolls'],
+             main:['Dal Makhni','Shahi Paneer','Chicken Tikka Masala','Mutton Rogan Josh','Jeera Rice','Naan','Laccha Paratha'],
+             sweet:['Gulab Jamun','Rasmalai','Phirni','Jalebi with Rabri'],
+             live:['Chaat Counter','Ice Cream Station','Paan Corner']}},
+      {id:'c2',name:'Royal Darbar Caterers',badge:'👑',price:500,tags:['Premium','5-star style'],rating:'4.9',
+       desc:'White-glove catering with silver service, imported crockery & private chef stations.',
+       menu:{starter:['Smoked Salmon Canapé','Tandoori Prawns','Hara Bhara Kebab','Galouti Kebab'],
+             main:['Dum Gosht','Malai Kofta','Butter Chicken','Achari Paneer','Biryani Station','Assorted Breads'],
+             sweet:['Shahi Tukda','Basundi','Chocolate Fountain','Kulfi Falooda'],
+             live:['Chaat Counter','Pasta Live','Dessert Bar']}},
+      {id:'c3',name:'Ghar Ka Khana',badge:'🏠',price:250,tags:['Budget-friendly','Home-style'],rating:'4.5',
+       desc:'Authentic home-style cooking, ideal for intimate gatherings. Generous portions guaranteed.',
+       menu:{starter:['Samosa','Dahi Bhalle','Veg Cutlet'],
+             main:['Rajma','Chole','Paneer Butter Masala','Dal Tadka','Rice','Roti'],
+             sweet:['Kheer','Sooji Halwa','Ladoo'],
+             live:['Bhel Puri Counter']}},
+      {id:'c4',name:'Spice Route Events',badge:'🌶',price:420,tags:['Pan-Indian','Regional specialties'],rating:'4.7',
+       desc:'Celebrate diversity with curated regional menus from across India — Bengali, Rajasthani, South Indian stations.',
+       menu:{starter:['Bharwa Mirchi','Fish Cutlet','Veg Dimsum','Kachori'],
+             main:['Rajasthani Dal Baati','Bengali Fish Curry','South Indian Thali Station','Lucknowi Biryani'],
+             sweet:['Mishti Doi','Churma Ladoo','Payasam'],
+             live:['Regional Live Station','Filter Coffee Counter']}}
+    ],
+    Delhi:[
+      {id:'c5',name:'Punjabi Zaika',badge:'🧡',price:400,tags:['Dhaba-luxury','Hearty'],rating:'4.8',
+       desc:'Delhi\'s most loved wedding caterers. Known for buttery dal, tandoori bread & royal desserts.',
+       menu:{starter:['Amritsari Fish','Paneer Tikka','Dahi Ke Kebab'],main:['Dal Makhni','Sarson Saag','Butter Chicken','Naan'],sweet:['Gajar Halwa','Kulfi','Gulab Jamun'],live:['Langar Counter','Lassi Station']}},
+      {id:'c6',name:'Delhi Dawat House',badge:'🕌',price:550,tags:['Mughlai','Heritage'],rating:'4.9',
+       desc:'Authentic Mughlai cuisine straight from Old Delhi kitchens. A regal experience.',
+       menu:{starter:['Shami Kebab','Seekh Kebab','Dahi Bhalla'],main:['Nihari','Korma','Mutton Biryani','Naan'],sweet:['Shahi Tukda','Firni','Malpua'],live:['Kebab Grill Station']}},
+      {id:'c7',name:'Green Leaf Vegetarian',badge:'🌱',price:280,tags:['Pure Veg','Jain options'],rating:'4.6',
+       desc:'Complete vegetarian & Jain catering. Sattvic food specialists.',
+       menu:{starter:['Papad','Kachori','Tikki'],main:['Paneer Dishes','Dal','Mixed Veg','Roti','Rice'],sweet:['Halwa','Rasgulla','Ladoo'],live:['Chaat Counter']}},
+      {id:'c8',name:'Fusion Platter Delhi',badge:'🍽',price:480,tags:['Continental+Indian','Modern'],rating:'4.7',
+       desc:'Blend of Indian & continental dishes. Perfect for younger crowds & corporate events.',
+       menu:{starter:['Bruschetta','Cheese Balls','Veg Wrap','Chicken Satay'],main:['Pasta Station','Butter Chicken','Thai Curry','Biryani'],sweet:['Tiramisu','Gulab Jamun','Cheesecake'],live:['Pasta Live Counter','Juice Bar']}}
+    ],
+    Pune:[
+      {id:'c9',name:'Puneri Bhet',badge:'🏛',price:300,tags:['Maharashtrian','Authentic'],rating:'4.7',
+       menu:{starter:['Sabudana Vada','Batata Vada','Misal'],main:['Puran Poli','Varan Bhat','Bharli Vangi','Solkadhi'],sweet:['Basundi','Shrikhand','Modak'],live:['Dosa Counter']},
+       desc:'Traditional Maharashtrian thali with authentic flavours from Pune\'s finest cooks.'},
+      {id:'c10',name:'Poona Feast Works',badge:'🌟',price:450,tags:['Pan-Indian','Premium'],rating:'4.8',
+       menu:{starter:['Paneer Tikka','Fish Finger','Veg Spring Roll'],main:['Dal Makhni','Butter Chicken','Biryani','Naan'],sweet:['Gulab Jamun','Kulfi','Fruit Custard'],live:['Live Grill Counter']},
+       desc:'Premium wedding catering with live counters and dedicated service staff.'},
+      {id:'c11',name:'Sai Catering Services',badge:'🙏',price:220,tags:['Budget','Reliable'],rating:'4.4',
+       menu:{starter:['Samosa','Bhajiya'],main:['Veg Thali','Dal','Rice','Chapati'],sweet:['Kheer','Barfi'],live:[]},
+       desc:'Affordable, hygienic catering for mid-size events. Great value for money.'},
+      {id:'c12',name:'Koregaon Gourmet',badge:'✨',price:520,tags:['Gourmet','International'],rating:'4.9',
+       menu:{starter:['Amuse Bouche','Sushi Roll','Tandoori Prawns'],main:['Continental Station','Pan-Asian','Mughlai'],sweet:['Chocolate Fountain','Gelato Counter','Indian Sweets Bar'],live:['Chef\'s Table Station','Cocktail Mocktail Bar']},
+       desc:'Koregaon Park\'s finest caterers. International cuisine meets Indian hospitality.'}
+    ],
+    Bangalore:[
+      {id:'c13',name:'Silicon Spice',badge:'💻',price:380,tags:['Tech-crowd fav','Modern'],rating:'4.7',
+       menu:{starter:['Bruschetta','Tawa Kebab','Spring Roll'],main:['North Indian','South Indian Thali','Continental'],sweet:['Ice Cream Station','Halwa','Fruit Tart'],live:['Live Dosa Counter','Biryani Station']},
+       desc:'Bangalore\'s favourite for tech company events & modern weddings.'},
+      {id:'c14',name:'Karnataka Vilas',badge:'🌺',price:290,tags:['South Indian','Authentic'],rating:'4.8',
+       menu:{starter:['Medu Vada','Bhel','Cutlet'],main:['Bisi Bele Bath','Curd Rice','Rasam','Sambar','Dosa Counter'],sweet:['Mysore Pak','Payasam','Chiroti'],live:['Filter Coffee Counter','Live Idli Station']},
+       desc:'Authentic South Indian feast on banana leaf. A Bangalore tradition.'},
+      {id:'c15',name:'Garden City Events',badge:'🌿',price:460,tags:['Outdoor specialist','Eco-friendly'],rating:'4.8',
+       menu:{starter:['Mezze Platter','Paneer Tikka','Fish Fingers'],main:['Mediterranean+Indian','Biryani','Stir Fry Station'],sweet:['Chocolate Fountain','Kulfi','Fresh Fruit Platter'],live:['Smoothie Bar','Live Grill']},
+       desc:'Open-air catering with eco-friendly setup. Perfect for garden and outdoor weddings.'},
+      {id:'c16',name:'Grand Palace Banquets',badge:'🏰',price:580,tags:['Luxury','5-star style'],rating:'4.9',
+       menu:{starter:['Foie Gras','Tandoori Salmon','Truffle Arancini'],main:['European','Mughlai','South Indian'],sweet:['Dessert Theatre','Macaroon Tower','Gulab Jamun'],live:['Champagne Station','Live Pasta','Kebab Grill']},
+       desc:'Bangalore\'s most luxurious wedding caterers with 5-star service and presentation.'}
+    ]
+  },
+  cakes:{
+    Mumbai:[
+      {id:'ck1',name:'Butterscotch Dreams',badge:'🎂',pricePerKg:800,tags:['Fondant','Multi-tier'],rating:'4.8',flavours:['Red Velvet','Chocolate Truffle','Vanilla Bean','Mango Mousse'],desc:'Mumbai\'s top wedding cake studio. Floral fondant designs & sugar sculptures.'},
+      {id:'ck2',name:'Velvet Patisserie',badge:'🌹',pricePerKg:1200,tags:['Luxury','Imported chocolate'],rating:'4.9',flavours:['Dark Chocolate','Champagne','Pistachio','Rose Lychee'],desc:'Belgian chocolate specialist. Tall sculptural cakes with gold leaf & fresh florals.'},
+      {id:'ck3',name:'Sugar Fairy Bakes',badge:'🧁',pricePerKg:600,tags:['Budget','Custom'],rating:'4.5',flavours:['Chocolate','Vanilla','Pineapple','Black Forest'],desc:'Affordable custom cakes without compromising on taste. Perfect for mid-size events.'},
+      {id:'ck4',name:'The Cake Studio BKC',badge:'⭐',pricePerKg:1500,tags:['Designer','Couture'],rating:'5.0',flavours:['Opera','Caramel Praline','Strawberry Champagne','Exotic Fruits'],desc:'Couture cake designer. Each cake is a bespoke art piece. Requires 3 weeks advance booking.'}
+    ],
+    Delhi:[
+      {id:'ck5',name:'Delhi Cakehouse',badge:'🏛',pricePerKg:750,tags:['Classic','Reliable'],rating:'4.7',flavours:['Chocolate','Vanilla','Butterscotch','Fruit Cake'],desc:'Classic Delhi wedding cakes loved by generations.'},
+      {id:'ck6',name:'Leela Bake Studio',badge:'🌸',pricePerKg:1100,tags:['Floral','Luxury'],rating:'4.9',flavours:['Rose Cardamom','Saffron Pistachio','Belgian Chocolate','Lemon Drizzle'],desc:'Known for stunning floral sugar work and pastel luxury cakes.'},
+      {id:'ck7',name:'Bake My Day Delhi',badge:'🎉',pricePerKg:550,tags:['Fun','Customisable'],rating:'4.5',flavours:['Oreo','KitKat','Rainbow','Nutella'],desc:'Trendy flavours and themed cake designs for modern couples.'},
+      {id:'ck8',name:'The Royal Confectionery',badge:'👑',pricePerKg:1800,tags:['Royal','Gold leaf'],rating:'5.0',flavours:['Gold Tiramisu','Champagne Truffle','Royal Blue Velvet','Saffron Almond'],desc:'Old Delhi\'s finest confectioners. Heritage recipes with modern presentation.'}
+    ],
+    Pune:[
+      {id:'ck9',name:'Pune Patisserie',badge:'🥐',pricePerKg:700,flavours:['Chocolate','Vanilla','Mango'],tags:['French-inspired'],rating:'4.7',desc:'French-style cakes with Indian flavours. A Pune favourite.'},
+      {id:'ck10',name:'Koregaon Cake Atelier',badge:'🌺',pricePerKg:1300,flavours:['Rose Lychee','Dark Chocolate','Pistachio Cardamom'],tags:['Luxury','Artisan'],rating:'4.9',desc:'Artisan cake studio with bespoke design service.'},
+      {id:'ck11',name:'Sweet Hut Pune',badge:'🍬',pricePerKg:500,flavours:['Chocolate','Pineapple','Butterscotch'],tags:['Budget'],rating:'4.4',desc:'Affordable, tasty cakes for all events.'},
+      {id:'ck12',name:'Indulgence Desserts',badge:'✨',pricePerKg:1000,flavours:['Passion Fruit','Hazelnut Praline','Biscoff'],tags:['Modern','Unique flavours'],rating:'4.8',desc:'Unique flavour profiles and minimal aesthetic designs.'}
+    ],
+    Bangalore:[
+      {id:'ck13',name:'Bangalore Bake House',badge:'🌿',pricePerKg:750,flavours:['Coffee Mocha','Chocolate','Vanilla'],tags:['Coffee lovers'],rating:'4.7',desc:'Bangalore\'s love for filter coffee in cake form. Iconic coffee mocha speciality.'},
+      {id:'ck14',name:'Bloom Cakes BLR',badge:'🌸',pricePerKg:1100,flavours:['Rose','Pistachio','Lavender'],tags:['Floral','Artisan'],rating:'4.9',desc:'Pressed flower and botanical cake specialist. Instagram-famous studio.'},
+      {id:'ck15',name:'The Sugar Lab',badge:'🧪',pricePerKg:900,flavours:['Experimental','Seasonal','Classic'],tags:['Innovative'],rating:'4.8',desc:'Experimental flavour lab. New menu every season.'},
+      {id:'ck16',name:'Grand Tier Cakes',badge:'🏆',pricePerKg:1600,flavours:['Gold Velvet','Dark Chocolate','Champagne Berry'],tags:['Grand','Multi-tier'],rating:'5.0',desc:'Multi-tier showstopper cakes for grand events. Includes installation service.'}
+    ]
+  },
+  decor:{
+    Mumbai:[
+      {id:'d1',name:'Petal & Plinth',badge:'🌸',price:85000,tags:['Florals','Luxury'],rating:'4.9',desc:'Mumbai\'s leading floral decorators. Fresh flower mandap, centrepieces & aisle decor.',themes:['Floral Fantasy','Pastel Romance','Royal Marigold']},
+      {id:'d2',name:'Velvet Venue Decor',badge:'🏛',price:120000,tags:['Draping','Grand'],rating:'4.8',desc:'Specialise in full venue draping, ceiling installations & bespoke lighting design.',themes:['Royal Drape','Celestial','Vintage Gold']},
+      {id:'d3',name:'Budget Blooms',badge:'🌻',price:45000,tags:['Budget','Colourful'],rating:'4.5',desc:'Affordable decor without compromise. Bright, cheerful & vibrant setups.',themes:['Bright Festival','Simple Elegance','Desi Vibes']},
+      {id:'d4',name:'The Decor Lab',badge:'✨',price:200000,tags:['Designer','Bespoke'],rating:'5.0',desc:'Bespoke luxury decor. Each design is a one-of-a-kind architectural experience.',themes:['Modern Luxury','Forest Fantasy','Celestial Garden']}
+    ],
+    Delhi:[
+      {id:'d5',name:'Delhi Florals & Beyond',badge:'🌺',price:95000,tags:['Grand','Traditional'],rating:'4.8',desc:'Delhi-style grand florals with marigold, roses & tuberose.',themes:['Rajasthani Royal','Golden Hour','Mogul Garden']},
+      {id:'d6',name:'Shaahi Sajawat',badge:'👑',price:150000,tags:['Heritage','Royal'],rating:'4.9',desc:'Heritage-inspired decor using antique props, mughali arches & zardosi drapes.',themes:['Mughal Empire','Nawabi','Red Fort Grandeur']},
+      {id:'d7',name:'DLF Decor Studio',badge:'🌟',price:220000,tags:['Ultra-luxury','Imported'],rating:'5.0',desc:'Ultra-luxury decor with imported flowers, crystal installations & mood lighting.',themes:['Crystal Palace','European Baroque','Midnight Garden']},
+      {id:'d8',name:'Simple Touch Decor',badge:'🕊',price:40000,tags:['Minimal','Clean'],rating:'4.4',desc:'Simple, elegant setups for intimate gatherings. Less is more.',themes:['Minimalist White','Rustic Chic','Boho Garden']}
+    ],
+    Pune:[
+      {id:'d9',name:'Puneri Parijat Decor',badge:'🌸',price:70000,tags:['Traditional','Fresh flowers'],rating:'4.8',desc:'Traditional Maharashtrian decor with Genda phool & jasmine garlands.',themes:['Maharashtrian Traditional','Ganesh Theme','Floral Mandap']},
+      {id:'d10',name:'Urban Bloom Pune',badge:'🌿',price:100000,tags:['Modern','Garden'],rating:'4.8',desc:'Garden-inspired modern decor. Lush greens, tropical florals & ambient lighting.',themes:['Tropical Garden','Boho Luxe','Green Fairy']},
+      {id:'d11',name:'Pearl Decor Works',badge:'💎',price:55000,tags:['Mid-range','Elegant'],rating:'4.6',desc:'Elegant, well-crafted decor at sensible price. Very popular for mid-size weddings.',themes:['Pearl White','Dusty Rose','Champagne Gold']},
+      {id:'d12',name:'Grand Celebrations Pune',badge:'🏆',price:180000,tags:['Luxury','Full venue'],rating:'4.9',desc:'Full venue transformation specialist. Known for jaw-dropping entries & stages.',themes:['Palace Grandeur','Bollywood Glam','Vintage Estate']}
+    ],
+    Bangalore:[
+      {id:'d13',name:'Garden City Florals',badge:'🌼',price:80000,tags:['Garden','Eco-friendly'],rating:'4.8',desc:'Sustainable florals & décor. Locally sourced flowers, zero-waste setup.',themes:['Garden Sanctuary','Eco Luxe','Tropical Bliss']},
+      {id:'d14',name:'Bangalore Decor Co.',badge:'🌆',price:110000,tags:['Contemporary','Urban'],rating:'4.7',desc:'Contemporary urban decor. Ideal for modern couples who want clean, chic setups.',themes:['Urban Chic','Industrial Luxe','Art Deco']},
+      {id:'d15',name:'Ritz Decor BLR',badge:'🏰',price:175000,tags:['Grand','Imported flowers'],rating:'4.9',desc:'Grand luxury decor with imported orchids, peonies & bespoke installations.',themes:['Orchid Garden','Crystal Clear','Grand Ballroom']},
+      {id:'d16',name:'Wildflower Studio BLR',badge:'🌾',price:65000,tags:['Boho','Whimsical'],rating:'4.7',desc:'Whimsical boho setups with pampas grass, dried florals & fairy lights.',themes:['Boho Whimsy','Golden Meadow','Rustic Fairy']}
+    ]
+  },
+  entry:[
+    {id:'e1',name:'Doli Entry',badge:'🪢',price:15000,desc:'Traditional wedding palanquin carried by 4 bearers. Complete with silk canopy & flower decoration.',includes:['4 bearers','Decorated palanquin','Flower arrangement','30 min service']},
+    {id:'e2',name:'Dhol Tasha Band',badge:'🥁',price:12000,desc:'Energetic dhol & tasha band to kick off the baraat or any ceremony entry.',includes:['8 musicians','2 dhols + 4 tashas','Traditional + Bollywood mix','45 min set']},
+    {id:'e3',name:'Horse & Carriage',badge:'🐎',price:35000,desc:'Royal entry on decorated horse or vintage horse carriage. Show-stopper arrival.',includes:['Decorated horse/carriage','Flower garlands','Handler','1 hour']},
+    {id:'e4',name:'Grand Fireworks Entry',badge:'🎆',price:25000,desc:'Spectacular entry with sparklers, flower cannons & cold fire pyrotechnics.',includes:['Sparkler tunnel','Cold fire pillars','Flower cannon shower','Sound sync option']},
+    {id:'e5',name:'Luxury Car Entry',badge:'🚗',price:20000,desc:'Arrive in a vintage or luxury car — Rolls Royce, Bentley or Mustang.',includes:['Choice of vintage/luxury car','Floral decoration','Chauffeur','2 hour hire']},
+    {id:'e6',name:'Drone Entry',badge:'🚁',price:18000,desc:'Cinematic aerial drone footage of your entry, plus drone with lights for night entry.',includes:['4K drone camera','LED drone for night','Aerial highlights video','Pilot & crew']}
+  ],
+  artists:{
+    Mumbai:[
+      {id:'a1',type:'music',name:'Raaga & Rhythm Band',badge:'🎵',price:45000,desc:'8-piece live band. Performs Bollywood, ghazals, sufi & folk. Perfect for sangeet & receptions.',includes:'8 musicians · Sound system · 3 hour set · Costume on request'},
+      {id:'a2',type:'music',name:'DJ Zara Mumbai',badge:'🎧',price:25000,desc:'Top Mumbai DJ with Bollywood, EDM & retro mixes. Full sound & lights setup included.',includes:'Professional DJ setup · LED screen · Full sound · 4 hours'},
+      {id:'a3',type:'dhol',name:'Dhol Dhamaka Crew',badge:'🥁',price:18000,desc:'High-energy dhol crew for baraat, sangeet & entry moments. 4–6 drummers.',includes:'4–6 dhol players · LED dhols · 2 hour set · Costume'},
+      {id:'a4',type:'doli',name:'Royal Doli Experience',badge:'🪢',price:22000,desc:'Traditional palkhi doli carried by uniformed bearers. Bride\'s grand arrival.',includes:'4 uniformed bearers · Decorated doli · Flower shower · 45 min'},
+      {id:'a5',type:'flowers',name:'Floral Artist Priya',badge:'🌸',price:35000,desc:'Live flower arrangement artist. Creates mandap & centrepieces live during setup for guests to watch.',includes:'Live floral arrangement demo · Custom centrepieces · 2 hours'},
+      {id:'a6',type:'painting',name:'Canvas & Emotions',badge:'🎨',price:30000,desc:'Live portrait & couple painting during reception. A unique keepsake for guests & the couple.',includes:'Live painting performance · Framed artwork for couple · 3 hours · Art exhibit corner'}
+    ],
+    Delhi:[
+      {id:'a7',type:'music',name:'Delhi Sufi Night',badge:'🎶',price:50000,desc:'Soulful sufi & qawwali group. 6 artists. Perfect for pre-wedding evenings.',includes:'6 artists · Harmonium + tabla + vocals · 3 hour set'},
+      {id:'a8',type:'music',name:'DJ Beats Delhi',badge:'🎧',price:20000,desc:'Popular Delhi DJ with Punjabi, Bollywood & bhangra mix.',includes:'DJ setup · Sound · 4 hours'},
+      {id:'a9',type:'dhol',name:'Punjab Da Dhol',badge:'🥁',price:15000,desc:'Authentic Punjabi dhol with bhangra dancers.',includes:'2 dhol players · 4 bhangra dancers · 1.5 hours'},
+      {id:'a10',type:'painting',name:'Art of Moments Delhi',badge:'🎨',price:28000,desc:'Live event painting. Captures key moments in real time on large canvas.',includes:'Large canvas · Live painting · Display during reception · Take-home artwork'},
+      {id:'a11',type:'doli',name:'Sheesh Mahal Doli',badge:'🪢',price:20000,desc:'Mirror-work decorated doli for a royal Delhi wedding entry.',includes:'4 bearers · Decorated doli · Music + · 45 min'},
+      {id:'a12',type:'flowers',name:'Gul Noor Floral Art',badge:'🌺',price:32000,desc:'Live interactive floral installation. Guests participate in flower wall creation.',includes:'Interactive flower wall · Live arrangement · 2 hours'}
+    ],
+    Pune:[
+      {id:'a13',type:'music',name:'Swar Sadhana Band',badge:'🎵',price:38000,desc:'Classical & semi-classical live ensemble. Raga-based performances for elegant events.',includes:'6 musicians · Classical set · Bollywood medley · 2.5 hours'},
+      {id:'a14',type:'dhol',name:'Puneri Dhol Pathak',badge:'🥁',price:14000,desc:'Traditional Puneri dhol pathak for all ceremonies.',includes:'6 dhol players · Traditional beats · 2 hours'},
+      {id:'a15',type:'painting',name:'Brushstroke Moments Pune',badge:'🎨',price:24000,desc:'Live caricature & portrait artist. Fun for all age groups at events.',includes:'Live caricature station · Digital prints · 3 hours'},
+      {id:'a16',type:'flowers',name:'Marigold Studio',badge:'🌻',price:20000,desc:'Live marigold garland & phool-mala making. Interactive for guests.',includes:'Live garland making · Guest participation · 1.5 hours'}
+    ],
+    Bangalore:[
+      {id:'a17',type:'music',name:'Bangalore Blues & Beyond',badge:'🎵',price:42000,desc:'Versatile Bangalore band. English, Kannada & Bollywood mix. Great for cocktail parties.',includes:'7 musicians · Sound system · 3 hour set'},
+      {id:'a18',type:'music',name:'DJ Aura BLR',badge:'🎧',price:22000,desc:'Bangalore\'s rising DJ star. EDM + Bollywood + international chart toppers.',includes:'Full DJ setup · Lighting · 4 hours'},
+      {id:'a19',type:'dhol',name:'Rhythm Collective BLR',badge:'🥁',price:16000,desc:'Fusion dhol and percussion performance. Modern take on traditional dhol.',includes:'4 percussionists · LED instruments · 2 hours'},
+      {id:'a20',type:'painting',name:'Chitra & Co. BLR',badge:'🎨',price:26000,desc:'Live landscape & abstract painting. Perfect for corporate & cocktail events.',includes:'Large canvas · Live abstract painting · Frame · 3 hours'},
+      {id:'a21',type:'flowers',name:'Bloom Lab BLR',badge:'🌿',price:28000,desc:'Tropical flower arrangement live demo with take-home mini arrangements for guests.',includes:'Live arrangement demo · Guest take-home bouquets · 2 hours'}
+    ]
+  },
+  gifts:{
+    Mumbai:[
+      {name:'The Return Gift Co.',role:'Gift hampers & personalised souvenirs',phone:'+91 98201 45678',price:'₹150–₹500 per guest',location:'Andheri West'},
+      {name:'Mithi Memories',role:'Customised sweet boxes, dry fruit hampers',phone:'+91 99877 65432',price:'₹200–₹800 per guest',location:'Bandra'},
+      {name:'Studio Craft Mumbai',role:'Personalised gifts, photo frames, keepsakes',phone:'+91 91234 56789',price:'₹300–₹1200 per guest',location:'Lower Parel'},
+      {name:'Vrindavan Gifting',role:'Traditional pooja items, silver gifts, fabric',phone:'+91 98765 43210',price:'₹250–₹600 per guest',location:'Malad'}
+    ],
+    Delhi:[
+      {name:'Delhi Gift Hub',role:'Luxury hampers, dry fruits & mithai boxes',phone:'+91 99110 22334',price:'₹200–₹800 per guest',location:'Karol Bagh'},
+      {name:'Silver Strings Delhi',role:'Silver & brassware, traditional gifts',phone:'+91 98118 77665',price:'₹500–₹2000 per guest',location:'Lajpat Nagar'},
+      {name:'The Packaged Affair',role:'Branded packaging, eco-friendly gift wraps',phone:'+91 97115 44556',price:'₹100–₹400 per guest',location:'Saket'},
+      {name:'Royal Return Gifts',role:'Gold-dipped souvenirs, royal box packaging',phone:'+91 98765 12345',price:'₹400–₹1500 per guest',location:'Defence Colony'}
+    ],
+    Pune:[
+      {name:'Puneri Present House',role:'Traditional gifts, shawls, photo frames',phone:'+91 98225 67890',price:'₹200–₹600 per guest',location:'FC Road'},
+      {name:'Gifted Pune',role:'Customised wooden gifts, eco products',phone:'+91 91122 33445',price:'₹150–₹500 per guest',location:'Aundh'},
+      {name:'Sweet Note Gifts',role:'Artisanal sweets, chocolate boxes',phone:'+91 98765 09876',price:'₹250–₹700 per guest',location:'Kothrud'},
+      {name:'The Memory Makers',role:'Photo albums, personalised prints, frames',phone:'+91 99221 44567',price:'₹300–₹1000 per guest',location:'Baner'}
+    ],
+    Bangalore:[
+      {name:'Bangalore Gift Studio',role:'Eco gifts, bamboo products, sustainable options',phone:'+91 80113 22334',price:'₹200–₹700 per guest',location:'Indiranagar'},
+      {name:'Silk Valley Gifts BLR',role:'Mysore silk sarees, fabric gifts, weaves',phone:'+91 98456 78901',price:'₹500–₹3000 per guest',location:'Jayanagar'},
+      {name:'Artisan Box BLR',role:'Handcrafted gifts, pottery, art pieces',phone:'+91 99001 23456',price:'₹300–₹1200 per guest',location:'Koramangala'},
+      {name:'Choco Affairs',role:'Belgian chocolate boxes, custom truffle sets',phone:'+91 98765 00123',price:'₹250–₹800 per guest',location:'HSR Layout'}
+    ]
+  },
+  themes:{
+    wedding:[
+      {name:'Royal Marigold',desc:'Traditional marigold & rose mandap. Saffron, gold & deep red palette.',cost:'₹1.2L+',swatch:'linear-gradient(135deg,#f5a623,#c94020)'},
+      {name:'Celestial Romance',desc:'Celestial canopy with fairy lights, deep blue & gold stars theme.',cost:'₹1.5L+',swatch:'linear-gradient(135deg,#1a237e,#c9a84c)'},
+      {name:'Garden Paradise',desc:'Lush tropical florals, hanging greens & soft natural light.',cost:'₹90K+',swatch:'linear-gradient(135deg,#2e7d32,#f5ede0)'},
+      {name:'Vintage Heritage',desc:'Antique brass & copper props, ivory fabrics & classic marigold.',cost:'₹1.1L+',swatch:'linear-gradient(135deg,#8d6e63,#ffd54f)'}
+    ],
+    party:[
+      {name:'Midnight Galaxy',desc:'Dark, moody blues, silver constellation decor & dramatic lighting.',cost:'₹60K+',swatch:'linear-gradient(135deg,#0d1b2a,#6c8fd4)'},
+      {name:'Blush & Gold',desc:'Soft pink, ivory & gold. Feminine, elegant & timeless.',cost:'₹70K+',swatch:'linear-gradient(135deg,#f8bbd0,#ffd54f)'},
+      {name:'Urban Jungle',desc:'Tropical leaves, earthy tones, rattan & palm. Very Instagram.',cost:'₹50K+',swatch:'linear-gradient(135deg,#1b5e20,#f0f4c3)'},
+      {name:'Black Tie Glam',desc:'Dramatic black, silver & crystal. Sophisticated & bold.',cost:'₹1L+',swatch:'linear-gradient(135deg,#212121,#bdbdbd)'}
+    ]
+  }
+};
+
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active')}
+function switchNav(el,screen){if(!state.event&&!['screen-plan'].includes(screen)){showToast('Plan your event first');return}document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));el.classList.add('active');if(screen==='screen-plan'&&!state.event){showScreen('screen-home');return}showScreen(screen)}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
+function selectCity(city){state.city=city;document.querySelectorAll('.city-card').forEach(c=>{c.classList.toggle('sel',c.textContent.trim().startsWith(city))});document.getElementById('event-city-label').textContent=city}
+function updateBudget(v){state.budget=parseInt(v)||0}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+function showBudgetModal(){buildBudgetModal();document.getElementById('budget-modal').classList.add('open')}
+
+function applyTheme(type){
+  const root=document.documentElement;
+  if(type==='party'){document.body.className='theme-party'}else{document.body.className=''}
+}
+
+function selectEvent(name,icon,type){
+  state.event=name;state.theme=type;
+  applyTheme(type);
+  document.querySelectorAll('.event-card').forEach(c=>c.classList.remove('sel'));
+  event.currentTarget.classList.add('sel');
+  const ws=document.getElementById('wedding-time-section');
+  ws.style.display=(type==='wedding')?'block':'none';
+}
+
+function showPlanning(){
+  buildPlanContent();
+  buildTimeline();
+  buildAnchors();
+  buildGifts();
+  showScreen('screen-plan');
+  document.querySelectorAll('.nav-item')[0].classList.add('active');
+  document.querySelectorAll('.nav-item').forEach((n,i)=>{if(i>0)n.classList.remove('active')});
+}
+
+function calcTotal(){
+  let t=0;
+  const s=state.selections;
+  if(s.catering){const v=getCateringVendors().find(x=>x.id===s.catering);if(v)t+=v.price*state.plates}
+  if(s.cake){const v=getCakeVendors().find(x=>x.id===s.cake);if(v)t+=v.pricePerKg*state.cakeKg}
+  if(s.decor){const v=getDecorVendors().find(x=>x.id===s.decor);if(v)t+=v.price}
+  if(s.entry){const v=DATA.entry.find(x=>x.id===s.entry);if(v)t+=v.price}
+  s.artists.forEach(aid=>{const v=getArtistVendors().find(x=>x.id===aid);if(v)t+=v.price});
+  state.totalCost=t;
+  document.getElementById('header-budget').textContent=t.toLocaleString('en-IN');
+  return t;
+}
+
+function getCateringVendors(){return DATA.catering[state.city]||DATA.catering.Mumbai}
+function getCakeVendors(){return DATA.cakes[state.city]||DATA.cakes.Mumbai}
+function getDecorVendors(){return DATA.decor[state.city]||DATA.decor.Mumbai}
+function getArtistVendors(){return DATA.artists[state.city]||DATA.artists.Mumbai}
+
+function buildPlanContent(){
+  const steps=['Catering','Cake','Décor','Entry','Artists','Themes','Last-Minute'];
+  const dots=steps.map((_,i)=>`<div class="step-dot ${i===0?'active':''}" id="dot-${i}"></div>`).join('');
+  document.getElementById('step-dots').innerHTML=dots;
+  document.getElementById('plan-title').innerHTML=`${state.event} <em>in ${state.city}</em>`;
+  document.getElementById('plan-sub').textContent=`Budget: ₹${state.budget.toLocaleString('en-IN')} · Tap vendors to select`;
+  buildCateringSection();
+}
+
+function buildCateringSection(){
+  document.getElementById('plan-title').innerHTML=`Catering <em>options</em>`;
+  document.getElementById('plan-sub').textContent=`Select a caterer & set plate count`;
+  const vendors=getCateringVendors();
+  let html=`<div class="section">`;
+  vendors.forEach(v=>{
+    const totalEst=v.price*state.plates;
+    const isOver=totalEst>state.budget*0.35;
+    html+=`<div class="vendor-card ${state.selections.catering===v.id?'sel':''}" id="vc-${v.id}">
+      <div class="vc-check">✓</div>
+      <div class="vc-top">
+        <div class="vc-badge">${v.badge}</div>
+        <div class="vc-info">
+          <div class="vc-name">${v.name}</div>
+          <div><span class="vc-tag">${v.tags.join('</span><span class="vc-tag">')}</span></div>
+          <div class="vc-price">₹${v.price}<span>/plate</span></div>
+        </div>
+      </div>
+      <div class="vc-desc">${v.desc}</div>
+      <div style="margin-top:10px;font-size:11px;color:var(--gold);font-weight:500;letter-spacing:.5px">MENU HIGHLIGHTS</div>
+      <div class="vc-items">${v.menu.starter.slice(0,3).map(i=>`<span class="vc-item">${i}</span>`).join('')}${v.menu.main.slice(0,3).map(i=>`<span class="vc-item">${i}</span>`).join('')}${v.menu.sweet.slice(0,2).map(i=>`<span class="vc-item">${i}</span>`).join('')}</div>
+      ${v.menu.live.length?`<div style="margin-top:6px;font-size:11px;color:var(--subtext)">Live: ${v.menu.live.join(' · ')}</div>`:''}
+      ${isOver?`<div style="margin-top:8px;font-size:11px;color:#ff8888;background:#3d1010;border-radius:8px;padding:6px 10px">⚠ May exceed catering budget (est. ₹${totalEst.toLocaleString('en-IN')})</div>`:''}
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+        <button class="compare-btn ${state.compareItems.includes(v.id)?'marked':''}" onclick="toggleCompare('${v.id}');event.stopPropagation()" id="cmp-${v.id}">⊕ Compare</button>
+        <button class="compare-btn" onclick="showMenu('${v.id}');event.stopPropagation()">📋 Full Menu</button>
+      </div>
+    </div>`;
+  });
+  html+=`<div id="plates-section" style="${state.selections.catering?'':'display:none'}">
+    <div class="qty-row">
+      <span class="qty-label">Number of plates required</span>
+      <button class="qty-btn" onclick="changePlates(-10)">−</button>
+      <span class="qty-num" id="plates-num">${state.plates}</span>
+      <button class="qty-btn" onclick="changePlates(10)">+</button>
+    </div>
+    <div id="plates-total" style="text-align:right;font-size:13px;color:var(--gold);margin-top:6px;padding-right:4px"></div>
+  </div>`;
+  html+=`<div style="display:flex;gap:8px;margin-top:4px">
+    <button class="cta cta-outline" style="flex:1" onclick="showCompareModal()">Compare Selected</button>
+    <button class="cta" style="flex:1" onclick="nextSection('cake')">Next: Cake →</button>
+  </div></div>`;
+  document.getElementById('plan-content').innerHTML=html;
+  document.querySelectorAll('.vendor-card').forEach(card=>{
+    card.addEventListener('click',function(){
+      const id=this.id.replace('vc-','');
+      selectCaterer(id);
+    });
+  });
+  updatePlatesTotal();
+}
+
+function selectCaterer(id){
+  state.selections.catering=id;
+  document.querySelectorAll('.vendor-card').forEach(c=>{c.classList.toggle('sel',c.id===`vc-${id}`)});
+  document.getElementById('plates-section').style.display='block';
+  updatePlatesTotal();calcTotal();
+}
+
+function changePlates(n){state.plates=Math.max(10,state.plates+n);document.getElementById('plates-num').textContent=state.plates;updatePlatesTotal();calcTotal()}
+function updatePlatesTotal(){
+  const el=document.getElementById('plates-total');if(!el)return;
+  if(state.selections.catering){
+    const v=getCateringVendors().find(x=>x.id===state.selections.catering);
+    if(v)el.textContent=`Estimated total: ₹${(v.price*state.plates).toLocaleString('en-IN')}`;
+  }
+}
+
+function showMenu(id){
+  const v=getCateringVendors().find(x=>x.id===id);if(!v)return;
+  const html=`<div class="modal-title">${v.name}</div>
+  <div class="modal-sub">₹${v.price}/plate · ${v.tags.join(' · ')}</div>
+  <div style="margin-bottom:12px">
+    <div style="font-size:11px;color:var(--gold);font-weight:500;letter-spacing:1px;margin-bottom:8px">STARTERS</div>
+    ${v.menu.starter.map(i=>`<div style="font-size:13px;color:var(--cream);padding:4px 0;border-bottom:1px solid var(--border)">${i}</div>`).join('')}
+    <div style="font-size:11px;color:var(--gold);font-weight:500;letter-spacing:1px;margin:12px 0 8px">MAIN COURSE</div>
+    ${v.menu.main.map(i=>`<div style="font-size:13px;color:var(--cream);padding:4px 0;border-bottom:1px solid var(--border)">${i}</div>`).join('')}
+    <div style="font-size:11px;color:var(--gold);font-weight:500;letter-spacing:1px;margin:12px 0 8px">DESSERTS</div>
+    ${v.menu.sweet.map(i=>`<div style="font-size:13px;color:var(--cream);padding:4px 0;border-bottom:1px solid var(--border)">${i}</div>`).join('')}
+    ${v.menu.live.length?`<div style="font-size:11px;color:var(--gold);font-weight:500;letter-spacing:1px;margin:12px 0 8px">LIVE COUNTERS</div>${v.menu.live.map(i=>`<div style="font-size:13px;color:var(--cream);padding:4px 0;border-bottom:1px solid var(--border)">${i}</div>`).join('')}`:''}
+  </div>`;
+  document.getElementById('compare-content').innerHTML=html;
+  document.getElementById('compare-modal').classList.add('open');
+}
+
+function nextSection(sec){
+  document.getElementById('dot-0').className='step-dot done';
+  if(sec==='cake')buildCakeSection();
+  else if(sec==='decor')buildDecorSection();
+  else if(sec==='entry')buildEntrySection();
+  else if(sec==='artists')buildArtistsSection();
+  else if(sec==='themes')buildThemesSection();
+  else if(sec==='lastminute')buildLastMinuteSection();
+}
+
+function buildCakeSection(){
+  document.getElementById('plan-title').innerHTML=`Cake <em>selection</em>`;
+  document.getElementById('plan-sub').textContent=`Choose your cake & select kg required`;
+  const vendors=getCakeVendors();
+  let html=`<div class="section">`;
+  vendors.forEach(v=>{
+    html+=`<div class="vendor-card ${state.selections.cake===v.id?'sel':''}" id="vck-${v.id}" onclick="selectCake('${v.id}')">
+      <div class="vc-check">✓</div>
+      <div class="vc-top">
+        <div class="vc-badge">${v.badge}</div>
+        <div class="vc-info">
+          <div class="vc-name">${v.name}</div>
+          <div><span class="vc-tag">${v.tags.join('</span><span class="vc-tag">')}</span></div>
+          <div class="vc-price">₹${v.pricePerKg}<span>/kg</span></div>
+        </div>
+      </div>
+      <div class="vc-desc">${v.desc}</div>
+      <div style="margin-top:8px;font-size:11px;color:var(--gold);letter-spacing:.5px;font-weight:500">FLAVOURS</div>
+      <div class="vc-items">${v.flavours.map(f=>`<span class="vc-item">${f}</span>`).join('')}</div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="compare-btn ${state.compareItems.includes(v.id)?'marked':''}" onclick="toggleCompare('${v.id}');event.stopPropagation()" id="cmp-${v.id}">⊕ Compare</button>
+      </div>
+    </div>`;
+  });
+  html+=`<div id="cake-kg-section" style="${state.selections.cake?'':'display:none'}">
+    <div style="font-size:12px;color:var(--subtext);margin-bottom:8px">Select kg required</div>
+    <div class="kg-grid">${[1,2,3,4,5,6,8,10].map(k=>`<div class="kg-pill ${state.cakeKg===k?'sel':''}" onclick="selectKg(${k})">${k} kg</div>`).join('')}</div>
+    <div id="cake-total" style="text-align:right;font-size:13px;color:var(--gold);margin-top:8px"></div>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:12px">
+    <button class="cta cta-outline" style="flex:1" onclick="showCompareModal()">Compare Selected</button>
+    <button class="cta" style="flex:1" onclick="nextSection('decor')">Next: Décor →</button>
+  </div></div>`;
+  document.getElementById('plan-content').innerHTML=html;
+  updateCakeTotal();
+}
+
+function selectCake(id){state.selections.cake=id;document.querySelectorAll('[id^=vck-]').forEach(c=>c.classList.toggle('sel',c.id===`vck-${id}`));document.getElementById('cake-kg-section').style.display='block';updateCakeTotal();calcTotal()}
+function selectKg(k){state.cakeKg=k;document.querySelectorAll('.kg-pill').forEach(p=>p.classList.toggle('sel',p.textContent===`${k} kg`));updateCakeTotal();calcTotal()}
+function updateCakeTotal(){const el=document.getElementById('cake-total');if(!el)return;const v=getCakeVendors().find(x=>x.id===state.selections.cake);if(v)el.textContent=`Estimated: ₹${(v.pricePerKg*state.cakeKg).toLocaleString('en-IN')} for ${state.cakeKg}kg`}
+
+function buildDecorSection(){
+  document.getElementById('plan-title').innerHTML=`Décor & <em>florals</em>`;
+  document.getElementById('plan-sub').textContent=`Transform your venue`;
+  const vendors=getDecorVendors();
+  let html=`<div class="section">`;
+  vendors.forEach(v=>{
+    html+=`<div class="vendor-card ${state.selections.decor===v.id?'sel':''}" id="vd-${v.id}" onclick="selectDecor('${v.id}')">
+      <div class="vc-check">✓</div>
+      <div class="vc-top">
+        <div class="vc-badge">${v.badge}</div>
+        <div class="vc-info">
+          <div class="vc-name">${v.name}</div>
+          <div><span class="vc-tag">${v.tags.join('</span><span class="vc-tag">')}</span></div>
+          <div class="vc-price">₹${v.price.toLocaleString('en-IN')}<span>/event</span></div>
+        </div>
+      </div>
+      <div class="vc-desc">${v.desc}</div>
+      <div style="margin-top:8px;font-size:11px;color:var(--gold);letter-spacing:.5px;font-weight:500">THEME STYLES</div>
+      <div class="vc-items">${v.themes.map(t=>`<span class="vc-item">${t}</span>`).join('')}</div>
+      <button class="compare-btn ${state.compareItems.includes(v.id)?'marked':''}" onclick="toggleCompare('${v.id}');event.stopPropagation()" id="cmp-${v.id}" style="margin-top:10px">⊕ Compare</button>
+    </div>`;
+  });
+  html+=`<div style="display:flex;gap:8px;margin-top:4px">
+    <button class="cta cta-outline" style="flex:1" onclick="showCompareModal()">Compare Selected</button>
+    <button class="cta" style="flex:1" onclick="nextSection('entry')">Next: Entry →</button>
+  </div></div>`;
+  document.getElementById('plan-content').innerHTML=html;
+}
+function selectDecor(id){state.selections.decor=id;document.querySelectorAll('[id^=vd-]').forEach(c=>c.classList.toggle('sel',c.id===`vd-${id}`));calcTotal()}
+
+function buildEntrySection(){
+  document.getElementById('plan-title').innerHTML=`Grand <em>entry</em>`;
+  document.getElementById('plan-sub').textContent=`Make a statement arrival`;
+  let html=`<div class="section">`;
+  DATA.entry.forEach(v=>{
+    html+=`<div class="vendor-card ${state.selections.entry===v.id?'sel':''}" id="ve-${v.id}" onclick="selectEntry('${v.id}')">
+      <div class="vc-check">✓</div>
+      <div class="vc-top">
+        <div class="vc-badge">${v.badge}</div>
+        <div class="vc-info">
+          <div class="vc-name">${v.name}</div>
+          <div class="vc-price">₹${v.price.toLocaleString('en-IN')}<span>/event</span></div>
+        </div>
+      </div>
+      <div class="vc-desc">${v.desc}</div>
+      <div class="vc-items">${v.includes.map(i=>`<span class="vc-item">${i}</span>`).join('')}</div>
+    </div>`;
+  });
+  html+=`<button class="cta" onclick="nextSection('artists')">Next: Live Artists →</button></div>`;
+  document.getElementById('plan-content').innerHTML=html;
+}
+function selectEntry(id){state.selections.entry=id;document.querySelectorAll('[id^=ve-]').forEach(c=>c.classList.toggle('sel',c.id===`ve-${id}`));calcTotal()}
+
+function buildArtistsSection(){
+  document.getElementById('plan-title').innerHTML=`Live <em>artists</em>`;
+  document.getElementById('plan-sub').textContent=`Music · Dhol · Doli · Painting · Flowers`;
+  const artists=getArtistVendors();
+  const types=[{key:'music',label:'🎵 Live Music'},{key:'dhol',label:'🥁 Dhol'},{key:'doli',label:'🪢 Doli'},{key:'painting',label:'🎨 Live Painting'},{key:'flowers',label:'🌸 Flower Artist'}];
+  let html=`<div class="section">`;
+  types.forEach(type=>{
+    const filtered=artists.filter(a=>a.type===type.key);
+    if(!filtered.length)return;
+    html+=`<div style="font-size:12px;color:var(--gold);font-weight:500;letter-spacing:1px;margin-bottom:10px;margin-top:4px">${type.label}</div>`;
+    filtered.forEach(a=>{
+      const sel=state.selections.artists.includes(a.id);
+      html+=`<div class="artist-card">
+        <div class="artist-top">
+          <div><div class="artist-name">${a.badge} ${a.name}</div><div class="artist-type">${a.includes}</div></div>
+          <div class="artist-price">₹${a.price.toLocaleString('en-IN')}</div>
+        </div>
+        <div class="artist-includes">${a.desc}</div>
+        <button class="artist-btn ${sel?'sel':''}" onclick="toggleArtist('${a.id}',this)">${sel?'✓ Selected':'+ Add to event'}</button>
+      </div>`;
+    });
+  });
+  html+=`<button class="cta" onclick="nextSection('themes')" style="margin-top:4px">Next: Themes →</button></div>`;
+  document.getElementById('plan-content').innerHTML=html;
+}
+function toggleArtist(id,btn){
+  const idx=state.selections.artists.indexOf(id);
+  if(idx>-1){state.selections.artists.splice(idx,1);btn.textContent='+ Add to event';btn.classList.remove('sel')}
+  else{state.selections.artists.push(id);btn.textContent='✓ Selected';btn.classList.add('sel')}
+  calcTotal();
+}
+
+function buildThemesSection(){
+  document.getElementById('plan-title').innerHTML=`Event <em>themes</em>`;
+  document.getElementById('plan-sub').textContent=`Choose your visual story`;
+  const themes=DATA.themes[state.theme]||DATA.themes.wedding;
+  let html=`<div class="section"><div class="theme-grid">`;
+  themes.forEach((t,i)=>{
+    html+=`<div class="theme-card" style="background:var(--surface);border:2px solid var(--border)" onclick="selectTheme(${i},this)">
+      <div class="theme-swatch" style="background:${t.swatch}"></div>
+      <div class="theme-name">${t.name}</div>
+      <div class="theme-cost">${t.cost}</div>
+      <div style="font-size:11px;color:var(--subtext);margin-top:4px">${t.desc}</div>
+    </div>`;
+  });
+  html+=`</div>
+  <div style="margin-top:12px;background:var(--surface2);border-radius:12px;padding:14px;border:1px solid var(--border)">
+    <div style="font-size:12px;color:var(--gold);font-weight:500;margin-bottom:6px">💡 Budget-saving tips</div>
+    <div style="font-size:12px;color:var(--subtext);line-height:1.7">
+      • Use marigold & seasonal flowers — 40% cheaper than roses<br>
+      • DIY centrepieces save ₹15–30K<br>
+      • Rent props instead of buying<br>
+      • Book décor & catering as a package for 10% off
+    </div>
+  </div>
+  <button class="cta" onclick="nextSection('lastminute')" style="margin-top:12px">Next: Last-Minute Support →</button></div>`;
+  document.getElementById('plan-content').innerHTML=html;
+}
+function selectTheme(i,el){document.querySelectorAll('.theme-card').forEach(c=>c.style.borderColor='var(--border)');el.style.borderColor='var(--gold)'}
+
+function buildLastMinuteSection(){
+  document.getElementById('plan-title').innerHTML=`Last-Minute <em>support</em>`;
+  document.getElementById('plan-sub').textContent=`Select services you need help with`;
+  document.getElementById('lm-modal').classList.add('open');
+  const services=[
+    {id:'lm-catering',icon:'🍛',name:'Catering',vendor:'Bombay Feast Co. · +91 98201 11111'},
+    {id:'lm-cake',icon:'🎂',name:'Cake',vendor:'Butterscotch Dreams · +91 98765 22222'},
+    {id:'lm-decor',icon:'🌸',name:'Décor',vendor:'Petal & Plinth · +91 91234 33333'},
+    {id:'lm-entry',icon:'🥁',name:'Entry',vendor:'Dhol Dhamaka · +91 99001 44444'},
+    {id:'lm-artists',icon:'🎵',name:'Artists',vendor:'Raaga & Rhythm · +91 98876 55555'},
+    {id:'lm-photo',icon:'📸',name:'Photo & Reels',vendor:'Studio Lens · +91 97654 66666'},
+    {id:'lm-anchor',icon:'🎙',name:'Anchor/Emcee',vendor:'Events by Rohan · +91 91111 77777'},
+    {id:'lm-flowers',icon:'💐',name:'Flower Entry',vendor:'Petal Shower Co. · +91 98888 88888'}
+  ];
+  document.getElementById('lm-content').innerHTML=services.map(s=>`
+    <div class="lm-card ${state.selections.lastMinute.includes(s.id)?'sel':''}" id="${s.id}" onclick="toggleLM('${s.id}',this)">
+      <div class="lm-icon">${s.icon}</div>
+      <div class="lm-name">${s.name}</div>
+      <div class="lm-vendor">${s.vendor}</div>
+    </div>`).join('');
+  let planHtml=`<div class="section"><div style="text-align:center;padding:40px 0 20px">
+    <div style="font-size:40px;margin-bottom:12px">🎊</div>
+    <div style="font-family:var(--font-display);font-size:24px;color:var(--cream)">You're all set!</div>
+    <div style="font-size:13px;color:var(--subtext);margin-top:6px">Review your selections below</div>
+  </div>
+  <button class="cta" onclick="buildSummary();showScreen('screen-summary')">View Final Summary →</button></div>`;
+  document.getElementById('plan-content').innerHTML=planHtml;
+}
+function toggleLM(id,el){
+  const idx=state.selections.lastMinute.indexOf(id);
+  if(idx>-1){state.selections.lastMinute.splice(idx,1);el.classList.remove('sel')}
+  else{state.selections.lastMinute.push(id);el.classList.add('sel')}
+}
+
+function toggleCompare(id){
+  const idx=state.compareItems.indexOf(id);
+  if(idx>-1)state.compareItems.splice(idx,1);
+  else if(state.compareItems.length<2)state.compareItems.push(id);
+  else{showToast('Max 2 items to compare');return}
+  const btn=document.getElementById(`cmp-${id}`);
+  if(btn)btn.classList.toggle('marked',state.compareItems.includes(id));
+}
+
+function showCompareModal(){
+  if(state.compareItems.length<2){showToast('Mark 2 vendors to compare');return}
+  const allVendors=[...getCateringVendors(),...getCakeVendors(),...getDecorVendors(),...DATA.entry];
+  const items=state.compareItems.map(id=>allVendors.find(v=>v.id===id)).filter(Boolean);
+  if(items.length<2){showToast('Select 2 items from the same category');return}
+  const a=items[0],b=items[1];
+  const budgetFit=(v)=>{
+    const cost=v.price||v.pricePerKg||0;
+    return cost<state.budget*0.3?'✓ Within budget':'⚠ May strain budget';
+  };
+  const recommended=()=>{
+    const aScore=(a.price||a.pricePerKg||0);
+    const bScore=(b.price||b.pricePerKg||0);
+    const aRating=parseFloat(a.rating||0);
+    const bRating=parseFloat(b.rating||0);
+    const aVal=aRating/(aScore/10000);
+    const bVal=bRating/(bScore/10000);
+    return aVal>=bVal?a.name:b.name;
+  };
+  document.getElementById('compare-content').innerHTML=`
+    <div class="cg-header">
+      <div class="cg-name">${a.name}</div>
+      <div class="cg-name">${b.name}</div>
+    </div>
+    <div class="cg-row"><div class="cg-cell"><div class="cg-key">Price</div><div class="cg-val gold">₹${(a.price||a.pricePerKg||0).toLocaleString('en-IN')}</div></div><div class="cg-cell"><div class="cg-key">Price</div><div class="cg-val gold">₹${(b.price||b.pricePerKg||0).toLocaleString('en-IN')}</div></div></div>
+    <div class="cg-row"><div class="cg-cell"><div class="cg-key">Rating</div><div class="cg-val">⭐ ${a.rating||'N/A'}</div></div><div class="cg-cell"><div class="cg-key">Rating</div><div class="cg-val">⭐ ${b.rating||'N/A'}</div></div></div>
+    <div class="cg-row"><div class="cg-cell"><div class="cg-key">Speciality</div><div class="cg-val">${(a.tags||[]).join(', ')}</div></div><div class="cg-cell"><div class="cg-key">Speciality</div><div class="cg-val">${(b.tags||[]).join(', ')}</div></div></div>
+    <div class="cg-row"><div class="cg-cell"><div class="cg-key">Budget fit</div><div class="cg-val">${budgetFit(a)}</div></div><div class="cg-cell"><div class="cg-key">Budget fit</div><div class="cg-val">${budgetFit(b)}</div></div></div>
+    <div class="cg-row"><div class="cg-cell"><div class="cg-key">Description</div><div class="cg-val" style="font-size:11px">${a.desc}</div></div><div class="cg-cell"><div class="cg-key">Description</div><div class="cg-val" style="font-size:11px">${b.desc}</div></div></div>
+    <div class="recommended-banner">
+      <div class="rec-label">Our recommendation for your event</div>
+      <div class="rec-text">✓ ${recommended()} — best value for your budget & event type</div>
+    </div>`;
+  document.getElementById('compare-modal').classList.add('open');
+}
+
+function buildTimeline(){
+  const event=state.event;const time=state.ceremonyTime||'evening';
+  const label=document.getElementById('tl-event-label');
+  if(label)label.textContent=`${event} · ${time.charAt(0).toUpperCase()+time.slice(1)} ceremony`;
+  const timings={morning:{start:6,offset:0},afternoon:{start:10,offset:4},evening:{start:14,offset:8},night:{start:18,offset:12}};
+  const base=timings[time]||timings.evening;
+  const fmt=(h)=>{const hh=(base.start+h)%24;const ampm=hh>=12?'PM':'AM';return`${hh===0?12:hh>12?hh-12:hh}:00 ${ampm}`};
+  let roles=[];
+  if(['Wedding','Engagement','Mehendi','Sangeet'].includes(event)){
+    roles=[
+      {h:0,role:'Venue team & decorators arrive',note:'Setup begins — florals, lighting, draping'},
+      {h:1,role:'Catering team setup',note:'Kitchen prep, counters arranged, live stations ready'},
+      {h:2,role:'Sound & AV crew',note:'Mic check, DJ/band soundcheck, screens tested'},
+      {h:3,role:'Photographer & videographer in',note:'Venue shots, detail photography, B-roll begins'},
+      {h:3,role:'Hair & makeup team (bride/groom)',note:'Getting ready suite'},
+      {h:4,role:'Artists & performers arrive',note:'Dhol, doli, live music — sound & position check'},
+      {h:4,role:'Guest registration team',note:'Welcome desk, seating cards, gift table setup'},
+      {h:5,role:'Guests begin arriving',note:'Welcome drinks, photography starts'},
+      {h:5,role:'Anchor/emcee begins hosting',note:'Welcome address, introductions'},
+      {h:6,role:'Grand entry',note:`${event==='Wedding'?'Baraat arrives, doli entry, ceremony begins':event+' ceremony begins'}`},
+      {h:7,role:'Main ceremony',note:'Pheras / ritual / key event'},
+      {h:8,role:'Catering service commences',note:'Starters served, live counters open'},
+      {h:9,role:'Main course & celebrations',note:'Dancing, music, family photos'},
+      {h:11,role:'Desserts & farewell',note:'Sweet table open, cake cutting'},
+      {h:12,role:'Venue cleanup & wrap',note:'Decor team dismantles, catering clears'},
+    ];
+  } else {
+    roles=[
+      {h:0,role:'Venue & decor team arrives',note:'Balloon setup, backdrop, table decor'},
+      {h:1,role:'Catering & cake team',note:'Food setup, cake display arranged'},
+      {h:2,role:'Sound & music crew',note:'DJ/band soundcheck, playlist confirmed'},
+      {h:2,role:'Photographer setup',note:'Venue & decor shots before guests arrive'},
+      {h:3,role:'Guests begin arriving',note:'Welcome, welcome drinks, mingling'},
+      {h:3,role:'Anchor opens the event',note:'Welcome speech, introductions'},
+      {h:4,role:'Main event begins',note:`${event==='Birthday'?'Cake cutting, wishes, games':event+' ceremony begins'}`},
+      {h:5,role:'Catering service',note:'Food served, counters open'},
+      {h:6,role:'Entertainment & activities',note:'Games, live music, dance floor'},
+      {h:7,role:'Cake cutting & desserts',note:'Celebrations, group photos'},
+      {h:8,role:'Farewell & return gifts',note:'Guests leave, thank you moments'},
+      {h:9,role:'Venue cleanup',note:'All teams clear and wrap'},
+    ];
+  }
+  const content=document.getElementById('timeline-content');
+  if(content){
+    content.innerHTML=roles.map(r=>`<div class="tl-item"><div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div><div class="tl-content"><div class="tl-time">${fmt(r.h)}</div><div class="tl-role">${r.role}</div><div class="tl-note">${r.note}</div></div></div>`).join('');
+  }
+}
+
+function buildAnchors(){
+  const anchors=[
+    {name:'Riya Sharma',initials:'RS',role:'Celebrity emcee · Bilingual (Hindi/English)',price:'₹25,000–₹45,000',script:'Good evening everyone! Tonight we celebrate the union of two beautiful souls. Please join me as we welcome...'},
+    {name:'Arjun Mehta',initials:'AM',role:'Stand-up comedian + anchor · Hindi',price:'₹20,000–₹35,000',script:'Aaj ka din bahut khaas hai! Hum sab yahan ek naye safar ki shuruat mein saath hain...'},
+    {name:'Priya & Kabir Duo',initials:'PK',role:'Anchor couple · Perfect for weddings',price:'₹40,000–₹70,000',script:'We are absolutely thrilled to be your hosts tonight. Love stories like this one remind us why we do what we do...'},
+    {name:'Vikram Nair',initials:'VN',role:'Corporate + Social events expert',price:'₹18,000–₹30,000',script:'Distinguished guests, family & friends — welcome to this incredible celebration! Let\'s make tonight unforgettable together...'}
+  ];
+  const content=document.getElementById('anchors-content');
+  if(content){
+    content.innerHTML=anchors.map(a=>`<div class="anchor-card">
+      <div class="anchor-header">
+        <div>
+          <div class="anchor-name">${a.name}</div>
+          <div style="font-size:11px;color:var(--subtext);margin-top:2px">${a.role}</div>
+        </div>
+        <div class="anchor-price">${a.price}</div>
+      </div>
+      <div class="anchor-desc">${a.role}</div>
+      <div style="font-size:11px;color:var(--gold);font-weight:500;letter-spacing:.5px;margin-bottom:6px">SAMPLE OPENING SCRIPT</div>
+      <div class="script-preview">"${a.script}"</div>
+    </div>`).join('');
+  }
+}
+
+function buildGifts(){
+  const vendors=(DATA.gifts[state.city]||DATA.gifts.Mumbai);
+  const content=document.getElementById('gifts-content');
+  if(content){
+    content.innerHTML=vendors.map(v=>`<div class="contact-card">
+      <div class="contact-avatar">${v.name.split(' ').map(w=>w[0]).join('').slice(0,2)}</div>
+      <div class="contact-info">
+        <div class="contact-name">${v.name}</div>
+        <div class="contact-role">${v.role}</div>
+        <div class="contact-price">${v.price}</div>
+        <div class="contact-location">📍 ${v.location} · ${v.phone}</div>
+      </div>
+    </div>`).join('');
+  }
+}
+
+function buildSummary(){
+  const total=calcTotal();
+  const budget=state.budget;
+  const over=total>budget;
+  const pct=Math.min(100,Math.round((total/budget)*100))||0;
+  const cv=getCateringVendors().find(x=>x.id===state.selections.catering);
+  const ckv=getCakeVendors().find(x=>x.id===state.selections.cake);
+  const dv=getDecorVendors().find(x=>x.id===state.selections.decor);
+  const ev=DATA.entry.find(x=>x.id===state.selections.entry);
+  const artistsTotal=state.selections.artists.reduce((s,id)=>{const v=getArtistVendors().find(x=>x.id===id);return s+(v?v.price:0)},0);
+  let suggestions='';
+  if(over){
+    const overage=total-budget;
+    suggestions=`<div style="margin-bottom:20px">
+      <div style="font-family:var(--font-display);font-size:18px;color:#ff8888;margin-bottom:10px">⚠ Budget exceeded by ₹${overage.toLocaleString('en-IN')}</div>`;
+    if(cv&&cv.price*state.plates>budget*0.35)suggestions+=`<div class="suggestion-card"><div class="sugg-title">Reduce catering cost</div><div class="sugg-desc">Consider Ghar Ka Khana (₹250/plate) or reduce plates by ${Math.round(overage/cv.price)}. Estimated saving: ₹${Math.round(overage*0.6).toLocaleString('en-IN')}</div></div>`;
+    if(dv&&dv.price>budget*0.25)suggestions+=`<div class="suggestion-card"><div class="sugg-title">Opt for a mid-range décor</div><div class="sugg-desc">Budget Blooms at ₹45,000 can give a beautiful setup. Saving up to ₹${(dv.price-45000).toLocaleString('en-IN')}</div></div>`;
+    if(artistsTotal>budget*0.15)suggestions+=`<div class="suggestion-card"><div class="sugg-title">Reduce live artist count</div><div class="sugg-desc">Select only 1–2 artists instead of ${state.selections.artists.length}. Estimated saving: ₹${Math.round(artistsTotal*0.5).toLocaleString('en-IN')}</div></div>`;
+    suggestions+=`</div>`;
+  }
+  document.getElementById('summary-content').innerHTML=`
+    ${suggestions}
+    <div class="bs-card" style="margin-bottom:12px">
+      <div class="bs-label">Budget used</div>
+      <div class="budget-bar"><div class="budget-fill ${over?'over':''}" style="width:${pct}%"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--subtext);margin-top:4px"><span>${pct}% used</span><span>₹${budget.toLocaleString('en-IN')} total</span></div>
+    </div>
+    <div class="budget-summary">
+      <div class="bs-card"><div class="bs-label">Total spent</div><div class="bs-val ${over?'over':''}">₹${total.toLocaleString('en-IN')}</div></div>
+      <div class="bs-card"><div class="bs-label">Remaining</div><div class="bs-val ${over?'over':''}">₹${Math.max(0,budget-total).toLocaleString('en-IN')}</div></div>
+    </div>
+    <div style="margin-top:20px">
+      ${cv?`<div class="summary-item"><div class="si-label">Catering (${state.plates} plates)</div><div class="si-val">₹${(cv.price*state.plates).toLocaleString('en-IN')}</div></div>`:''}
+      ${ckv?`<div class="summary-item"><div class="si-label">Cake (${state.cakeKg}kg)</div><div class="si-val">₹${(ckv.pricePerKg*state.cakeKg).toLocaleString('en-IN')}</div></div>`:''}
+      ${dv?`<div class="summary-item"><div class="si-label">Décor</div><div class="si-val">₹${dv.price.toLocaleString('en-IN')}</div></div>`:''}
+      ${ev?`<div class="summary-item"><div class="si-label">Entry</div><div class="si-val">₹${ev.price.toLocaleString('en-IN')}</div></div>`:''}
+      ${artistsTotal?`<div class="summary-item"><div class="si-label">Live Artists (${state.selections.artists.length})</div><div class="si-val">₹${artistsTotal.toLocaleString('en-IN')}</div></div>`:''}
+      <div class="summary-item" style="border:none"><div class="si-label" style="font-size:15px;color:var(--cream);font-weight:500">Grand Total</div><div class="si-val gold">₹${total.toLocaleString('en-IN')}</div></div>
+    </div>
+    <button class="cta" onclick="showToast('Booking request sent! Our team will contact you shortly 🎉')" style="margin-top:16px">Confirm & Book Event</button>
+    <button class="cta cta-outline" onclick="document.getElementById('lm-modal').classList.add('open')" style="margin-top:10px">Last-Minute Support</button>`;
+}
+
+function buildBudgetModal(){
+  calcTotal();
+  const total=state.totalCost;
+  document.getElementById('budget-modal-content').innerHTML=`
+    <div class="summary-item"><div class="si-label">Event</div><div class="si-val">${state.event||'Not set'}</div></div>
+    <div class="summary-item"><div class="si-label">City</div><div class="si-val">${state.city||'Not set'}</div></div>
+    <div class="summary-item"><div class="si-label">Budget</div><div class="si-val">₹${state.budget.toLocaleString('en-IN')}</div></div>
+    <div class="summary-item"><div class="si-label">Used</div><div class="si-val ${total>state.budget?'over':'gold'}">₹${total.toLocaleString('en-IN')}</div></div>
+    <div class="budget-bar" style="margin-top:8px"><div class="budget-fill ${total>state.budget?'over':''}" style="width:${Math.min(100,Math.round((total/Math.max(state.budget,1))*100))}%"></div></div>`;
+}
+
+showScreen('screen-home');
+</script>
+</body>
+</html>
